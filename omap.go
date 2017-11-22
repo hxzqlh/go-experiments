@@ -1,91 +1,133 @@
 package main
 
-import "fmt"
+import (
+	"container/list"
+	"fmt"
+	"sync"
+	"time"
+
+	cmn "dev.33.cn/33/common"
+)
+
+type Keyer interface {
+	GetKey() string
+}
 
 type MapList struct {
-	data map[string]interface{}
-	keys []string
+	sync.RWMutex
+	dataMap  map[string]*list.Element
+	dataList *list.List
 }
 
 func NewMapList() *MapList {
 	return &MapList{
-		data: make(map[string]interface{}),
-		keys: []string{},
+		dataMap:  make(map[string]*list.Element),
+		dataList: list.New(),
 	}
 }
 
-func (mapList *MapList) HasKey(k string) bool {
-	_, exists := mapList.data[k]
+func (mapList *MapList) Exists(data Keyer) bool {
+	mapList.RLock()
+	defer mapList.RUnlock()
+
+	_, exists := mapList.dataMap[data.GetKey()]
 	return exists
 }
 
-func (mapList *MapList) Set(key string, val interface{}) {
-	if !mapList.HasKey(key) {
-		mapList.keys = append(mapList.keys, key)
+func (mapList *MapList) Push(data Keyer) bool {
+	if mapList.Exists(data) {
+		return false
 	}
 
-	mapList.data[key] = val
+	mapList.Lock()
+	elem := mapList.dataList.PushBack(data)
+	mapList.dataMap[data.GetKey()] = elem
+	mapList.Unlock()
+
+	return true
 }
 
-func (mapList *MapList) Delete(key string) {
-	if !mapList.HasKey(key) {
+func (mapList *MapList) Remove(data Keyer) {
+	if !mapList.Exists(data) {
 		return
 	}
 
-	pos := indexOf(mapList.keys, key)
-	mapList.keys = remove(mapList.keys, pos)
-	delete(mapList.data, key)
+	mapList.Lock()
+	mapList.dataList.Remove(mapList.dataMap[data.GetKey()])
+	delete(mapList.dataMap, data.GetKey())
+	mapList.Unlock()
 }
 
 func (mapList *MapList) Size() int {
-	return len(mapList.data)
+	mapList.RLock()
+	defer mapList.RUnlock()
+
+	return mapList.dataList.Len()
 }
 
-func (mapList *MapList) Walk(cb func(key string, data interface{})) {
-	for _, k := range mapList.keys {
-		cb(k, mapList.data[k])
+func (mapList *MapList) Get(key string) interface{} {
+	mapList.RLock()
+	defer mapList.RUnlock()
+
+	e, ok := mapList.dataMap[key]
+	if ok {
+		return e.Value
+	} else {
+		return nil
 	}
 }
 
-func indexOf(data []string, word string) int {
-	for k, v := range data {
-		if word == v {
-			return k
-		}
+func (mapList *MapList) Walk(cb func(data Keyer)) {
+	mapList.RLock()
+	defer mapList.RUnlock()
+
+	for elem := mapList.dataList.Front(); elem != nil; elem = elem.Next() {
+		cb(elem.Value.(Keyer))
 	}
-	return -1
 }
 
-func remove(a []string, i int) []string {
-	a[i] = a[len(a)-1]
-	ret := a[:len(a)-1]
-	return ret
+type Balance struct {
+	Currency int32
+	Active   int64
+	Frozen   int64
+}
+
+func (b *Balance) GetKey() string {
+	return cmn.IntToString(b.Currency)
+}
+
+func read(ml *MapList) {
+	cb := func(data Keyer) {
+		fmt.Println(data)
+	}
+
+	for i := 0; i < 100000; i++ {
+		fmt.Println(i, "size", ml.Size())
+		ml.Walk(cb)
+		fmt.Println(i, ml.Get("444"))
+	}
+}
+
+func write(ml *MapList) {
+	a := &Balance{1, 100, 200}
+	b := &Balance{2, 210, 340}
+	c := &Balance{3, 30, 400}
+	d := &Balance{4, 344, 500}
+	for i := 0; i < 100000; i++ {
+		ml.Push(a)
+		ml.Push(b)
+		ml.Push(c)
+
+		ml.Remove(b)
+		ml.Remove(d)
+	}
 }
 
 func main() {
 	ml := NewMapList()
-	a := "ElementsAlice"
-	b := 12000000000000000
-	c := 3.56
-	d := struct {
-		Name string
-		Age  int
-	}{
-		Name: "hxz",
-		Age:  30,
-	}
 
-	ml.Set("one", a)
-	ml.Set("two", b)
-	ml.Set("three", c)
-	ml.Set("four", d)
+	go read(ml)
+	go write(ml)
 
-	cb := func(key string, data interface{}) {
-		fmt.Println(key, data)
-	}
-	ml.Walk(cb)
-
-	ml.Delete("one")
-	ml.Walk(cb)
-	fmt.Println(ml)
+	time.Sleep(time.Second)
 }

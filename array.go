@@ -23,7 +23,19 @@ func test2() {
 	fmt.Println(a, b)
 }
 
+func test3() {
+	a := []int{}
+
+	b := []int{1}
+	c := []int{2, 3}
+
+	a = append(a, b...)
+	a = append(a, c...)
+	fmt.Println(a)
+}
+
 func main() {
 	test1()
 	test2()
+	test3()
 }

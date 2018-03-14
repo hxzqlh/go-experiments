@@ -1,51 +1,68 @@
 package main
 
 /*
-typedef void (*callback)(void *);
+#include <stdlib.h>
+#include <math.h>
+typedef struct Foo {
+	int a;
+	int type;
+}Foo;
 
-static callback _cb;
-static void *_user_data;
-static void register_callback(callback cb, void *user_data) {
-    _cb = cb;
-    _user_data = user_data;
-}
-static void wait_event() {
-    _cb(_user_data);
+typedef int (*intFunc) ();
+
+int bridge_int_func(intFunc f) {
+	return f();
 }
 
-void cb_proxy(void *v);
-
-static void _register_callback(void *user_data) {
-  register_callback(cb_proxy, user_data);
+int fortytwo()
+{
+	return 42;
 }
+
+typedef struct POINT
+{
+	double x;
+	double y;
+}POINT;
 */
 import "C"
 import (
 	"fmt"
-	"unsafe"
-
-	"github.com/mattn/go-pointer"
+	"reflect"
+	"time"
 )
 
-type Callback struct {
-	Func     func(string)
-	UserData string
+func Random() int {
+	return int(C.random())
 }
 
-func my_callback(v string) {
-	fmt.Println("hello", v)
+func Seed(i int64) {
+	C.srandom(C.uint(i))
+}
+
+func Fortytwo() int {
+	return 42
 }
 
 func main() {
-	C._register_callback(pointer.Save(&Callback{
-		Func:     my_callback,
-		UserData: "my-callback",
-	}))
-	C.wait_event()
-}
+	Seed(time.Now().Unix())
+	fmt.Println(Random())
 
-//export cb_proxy
-func cb_proxy(v unsafe.Pointer) {
-	cb := pointer.Restore(v).(*Callback)
-	cb.Func(cb.UserData)
+	//var foo = C.struct_Foo{65, 28}
+	var foo = C.Foo{65, 28}
+	//fmt.Println(foo, C.sizeof_struct_Foo)
+	fmt.Println(foo, C.sizeof_Foo)
+	fmt.Println(foo._type, foo.a)
+
+	n, err := C.sqrt(-1)
+	fmt.Println(n, err)
+
+	f := C.intFunc(C.fortytwo)
+	fmt.Println(reflect.TypeOf(f), int(C.bridge_int_func(f)))
+	//fmt.Println(int(C.bridge_int_func(C.fortytwo))) // error
+
+	var p C.POINT
+	p.x = 9.45
+	p.y = 23.12
+	fmt.Println(p) // {9.45 23.12}
 }

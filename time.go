@@ -22,7 +22,24 @@ func test1() {
 	fmt.Println(t3, t3.Unix(), t3.Location())
 }
 
+func BeginOfDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+}
+
+func EndOfDay(t time.Time) time.Time {
+	bt := BeginOfDay(t)
+	return bt.Add(time.Hour * 24).Add(-time.Second)
+}
+
 func main() {
 	t := cmn.ToCstTime("2006-01-02 15:04:05", "2017-11-03 14:22:12")
 	fmt.Println(t, t.Unix())
+
+	t = time.Now()
+	bt := BeginOfDay(t)
+	tt := EndOfDay(t)
+	fmt.Println(t, t.Unix())
+	fmt.Println(bt, bt.Unix())
+	fmt.Println(tt, tt.Unix())
 }

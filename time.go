@@ -32,6 +32,12 @@ func EndOfDay(t time.Time) time.Time {
 	return bt.Add(time.Hour * 24).Add(-time.Second)
 }
 
+//当月最后一天
+func lastDayOfMonth(t time.Time) time.Time {
+	next := t.AddDate(0, 1, -t.Day())
+	return next
+}
+
 func main() {
 	t := cmn.ToCstTime("2006-01-02 15:04:05", "2017-11-03 14:22:12")
 	fmt.Println(t, t.Unix())
@@ -42,4 +48,8 @@ func main() {
 	fmt.Println(t, t.Unix())
 	fmt.Println(bt, bt.Unix())
 	fmt.Println(tt, tt.Unix())
+
+	now := time.Now()
+	now = cmn.CstTime(now.Format(time.RFC3339))
+	fmt.Println("now", now)
 }

@@ -37,11 +37,11 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type Address struct {
-	Street            string `protobuf:"bytes,1,opt,name=street" json:"street,omitempty"`
-	City              string `protobuf:"bytes,2,opt,name=city" json:"city,omitempty"`
-	State             string `protobuf:"bytes,3,opt,name=state" json:"state,omitempty"`
-	Zip               string `protobuf:"bytes,4,opt,name=zip" json:"zip,omitempty"`
-	IsShippingAddress bool   `protobuf:"varint,5,opt,name=isShippingAddress" json:"isShippingAddress,omitempty"`
+	Street            string `proto:"bytes,1,opt,name=street" json:"street,omitempty"`
+	City              string `proto:"bytes,2,opt,name=city" json:"city,omitempty"`
+	State             string `proto:"bytes,3,opt,name=state" json:"state,omitempty"`
+	Zip               string `proto:"bytes,4,opt,name=zip" json:"zip,omitempty"`
+	IsShippingAddress bool   `proto:"varint,5,opt,name=isShippingAddress" json:"isShippingAddress,omitempty"`
 }
 
 func (m *Address) Reset()                    { *m = Address{} }
@@ -85,7 +85,7 @@ func (m *Address) GetIsShippingAddress() bool {
 }
 
 type Customers struct {
-	Data []*Customer `protobuf:"bytes,1,rep,name=data" json:"data,omitempty"`
+	Data []*Customer `proto:"bytes,1,rep,name=data" json:"data,omitempty"`
 }
 
 func (m *Customers) Reset()                    { *m = Customers{} }
@@ -102,11 +102,11 @@ func (m *Customers) GetData() []*Customer {
 
 // Request message for creating a new customer
 type Customer struct {
-	Id        int32      `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Name      string     `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
-	Email     string     `protobuf:"bytes,3,opt,name=email" json:"email,omitempty"`
-	Phone     string     `protobuf:"bytes,4,opt,name=phone" json:"phone,omitempty"`
-	Addresses []*Address `protobuf:"bytes,5,rep,name=addresses" json:"addresses,omitempty"`
+	Id        int32      `proto:"varint,1,opt,name=id" json:"id,omitempty"`
+	Name      string     `proto:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Email     string     `proto:"bytes,3,opt,name=email" json:"email,omitempty"`
+	Phone     string     `proto:"bytes,4,opt,name=phone" json:"phone,omitempty"`
+	Addresses []*Address `proto:"bytes,5,rep,name=addresses" json:"addresses,omitempty"`
 }
 
 func (m *Customer) Reset()                    { *m = Customer{} }
@@ -150,8 +150,8 @@ func (m *Customer) GetAddresses() []*Address {
 }
 
 type Response struct {
-	Id      int32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Success bool  `protobuf:"varint,2,opt,name=success" json:"success,omitempty"`
+	Id      int32 `proto:"varint,1,opt,name=id" json:"id,omitempty"`
+	Success bool  `proto:"varint,2,opt,name=success" json:"success,omitempty"`
 }
 
 func (m *Response) Reset()                    { *m = Response{} }
@@ -174,7 +174,7 @@ func (m *Response) GetSuccess() bool {
 }
 
 type Filter struct {
-	Keyword string `protobuf:"bytes,1,opt,name=keyword" json:"keyword,omitempty"`
+	Keyword string `proto:"bytes,1,opt,name=keyword" json:"keyword,omitempty"`
 }
 
 func (m *Filter) Reset()                    { *m = Filter{} }
